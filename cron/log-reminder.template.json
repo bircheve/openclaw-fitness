@@ -1,0 +1,17 @@
+{
+  "id": "{{GENERATE_UUID}}",
+  "name": "fitness-log-reminder",
+  "schedule": "0 20 * * *",
+  "timezone": "{{TIMEZONE}}",
+  "enabled": true,
+  "sessionTarget": "isolated",
+  "delivery": {
+    "mode": "announce",
+    "channel": "{{CHANNEL}}",
+    "target": "{{TARGET}}"
+  },
+  "payload": {
+    "kind": "agentTurn",
+    "message": "Check if today's workout was logged. Look for a file matching today's date (YYYY-MM-DD) in ~/.openclaw/workspace/fitness/logs/. If a log exists: do nothing, stay silent. If no log exists: send a brief nudge: 'Hey, did you get a session in today? I can log it quick if you give me the highlights.' Keep it conversational, not pushy."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "{{GENERATE_UUID}}",
+  "name": "fitness-morning-briefing",
+  "schedule": "30 5 * * *",
+  "timezone": "{{TIMEZONE}}",
+  "enabled": true,
+  "sessionTarget": "isolated",
+  "delivery": {
+    "mode": "announce",
+    "channel": "{{CHANNEL}}",
+    "target": "{{TARGET}}"
+  },
+  "payload": {
+    "kind": "agentTurn",
+    "message": "Morning training briefing. Read the most recent fitness log from ~/.openclaw/workspace/fitness/logs/ to determine the current cycle day. Read the routine template for the next day. Send a one-line summary: 'Day {N} today -- {muscle groups}'. Do NOT send the full workout -- just the focus. If no logs exist yet, say 'No training data yet -- say \"set up fitness\" to get started.'"
+  }
+}

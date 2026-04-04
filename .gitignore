@@ -1,0 +1,10 @@
+node_modules/
+.env
+*.xcuserdata/
+DerivedData/
+build/
+.DS_Store
+*.swp
+*.swo
+bridge/store.json
+bridge/history.json

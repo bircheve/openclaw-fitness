@@ -1,0 +1,17 @@
+{
+  "id": "{{GENERATE_UUID}}",
+  "name": "fitness-weekly-summary",
+  "schedule": "0 20 * * 0",
+  "timezone": "{{TIMEZONE}}",
+  "enabled": true,
+  "sessionTarget": "isolated",
+  "delivery": {
+    "mode": "announce",
+    "channel": "{{CHANNEL}}",
+    "target": "{{TARGET}}"
+  },
+  "payload": {
+    "kind": "agentTurn",
+    "message": "Weekly fitness summary. Read the last 7-14 days of workout logs from ~/.openclaw/workspace/fitness/logs/. Summarize: total sessions this week, which muscle groups were hit, any notable PRs or progression, and consistency vs last week. Keep it to 3-5 lines. If no logs exist, skip silently."
+  }
+}

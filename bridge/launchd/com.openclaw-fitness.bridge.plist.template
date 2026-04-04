@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.openclaw-fitness.bridge</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <!-- Replace with your node path: run `which node` to find it -->
+        <string>{{NODE_PATH}}</string>
+        <!-- Replace with the full path to server.js -->
+        <string>{{BRIDGE_DIR}}/server.js</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>{{LOG_DIR}}/workout-bridge.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>{{LOG_DIR}}/workout-bridge.err.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PORT</key>
+        <string>18792</string>
+        <!-- Uncomment and set these for agent notifications -->
+        <!-- <key>NOTIFY_CHANNEL</key> -->
+        <!-- <string>your-channel</string> -->
+        <!-- <key>NOTIFY_TARGET</key> -->
+        <!-- <string>your-target</string> -->
+    </dict>
+</dict>
+</plist>

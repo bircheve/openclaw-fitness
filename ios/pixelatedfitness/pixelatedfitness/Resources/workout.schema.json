@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "WorkoutResponse",
+  "type": "object",
+  "properties": {
+    "muscle_groups": {
+      "type": "array",
+      "description": "Array of muscle groups targeted by the exercise",
+      "items": {
+        "type": "string"
+      }
+    },
+    "work": {
+      "type": "object",
+      "properties": {
+        "warmup": {
+          "$ref": "#/definitions/timeBasedWorkout"
+        },
+        "main": {
+          "$ref": "#/definitions/strengthBasedWorkout"
+        },
+        "cardio": {
+          "$ref": "#/definitions/timeBasedWorkout"
+        },
+        "cooldown": {
+          "$ref": "#/definitions/timeBasedWorkout"
+        }
+      },
+      "required": ["warmup", "main", "cardio", "cooldown"]
+    }
+  },
+  "required": ["muscle_groups", "work"],
+  "definitions": {
+    "strengthBasedWorkout": {
+      "type": "object",
+      "description": "Exercises that are performed for a set number of reps",
+      "properties": {
+        "exercises": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the exercise"
+              },
+              "instructions": {
+                "type": "string",
+                "description": "Concise instructions for the exercise. Must be 200 characters or less",
+                "maxLength": 200
+              },
+              "equipment": {
+                "type": "string",
+                "description": "Name of the equipment needed for the exercise"
+              },
+              "muscle_groups": {
+                "type": "array",
+                "description": "Array of muscle groups targeted by the exercise",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sets": {
+                "type": "array",
+                "description": "Array of items with a reps property that specifies the number of reps for the set",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "reps": {
+                      "type": "number",
+                      "description": "Number of reps for the set"
+                    }
+                  },
+                  "required": ["reps"]
+                }
+              }
+            },
+            "required": ["name", "instructions", "equipment", "muscle_groups", "sets"]
+          }
+        }
+      },
+      "required": ["exercises"]
+    },
+    "timeBasedWorkout": {
+      "type": "object",
+      "description": "Exercises that are performed for a set duration of time",
+      "properties": {
+        "exercises": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "duration": {
+                "type": "number",
+                "description": "Duration in seconds"
+              },
+              "name": {
+                "type": "string",
+                "description": "Name of the exercise"
+              },
+              "instructions": {
+                "type": "string",
+                "description": "Concise instructions for the exercise. Must be 200 characters or less",
+                "maxLength": 200
+              },
+              "equipment": {
+                "type": "string",
+                "description": "Name of the equipment needed for the exercise"
+              }
+            },
+            "required": ["duration", "name", "instructions", "equipment"]
+          }
+        }
+      },
+      "required": ["exercises"]
+    }
+  }
+}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Set this to your bridge server URL -->
+	<!-- Same LAN: http://192.168.x.x:18792 -->
+	<!-- Tailscale: http://YOUR_TAILSCALE_IP:18792 -->
+	<!-- Local dev: http://localhost:18792 -->
+	<key>Bridge_Base_URL</key>
+	<string>http://localhost:18792</string>
+</dict>
+</plist>

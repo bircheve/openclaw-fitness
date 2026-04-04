@@ -1,0 +1,16 @@
+{
+  "id": "openclaw-fitness",
+  "version": "1.0.0",
+  "description": "Workout bridge — intercepts workout JSON markers and pushes to the Pixelated Fitness iOS app",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "bridgeUrl": {
+        "type": "string",
+        "default": "http://localhost:18792",
+        "description": "URL of the workout bridge server"
+      }
+    }
+  }
+}

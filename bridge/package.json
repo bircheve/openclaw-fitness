@@ -1,0 +1,10 @@
+{
+  "name": "openclaw-fitness-bridge",
+  "version": "1.0.0",
+  "description": "Workout bridge server for Pixelated Fitness iOS app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT"
+}
