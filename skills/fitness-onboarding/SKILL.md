@@ -82,7 +82,22 @@ Leave the working weights table empty — it will be populated after the first l
 
 Write the populated profile to `$FITNESS_DIR/athlete-profile.md`.
 
-### 3. Confirm and hand off
+### 3. Customize the PII audit script
+
+After generating the profile, update `scripts/audit-pii.sh` with the user's actual personal data so they can audit their own forks/contributions. Read the script and replace the placeholder patterns:
+
+- `REPLACE_WITH_YOUR_PHONE` → the user's phone number (if provided)
+- `REPLACE_WITH_YOUR_NAME` → the user's name
+- `REPLACE_WITH_YOUR_EMAIL` → the user's email username
+- `REPLACE_WITH_YOUR_GYM` → the gym name from Phase 2
+- `REPLACE_WITH_YOUR_LOCATION` → the user's city/location
+- `REPLACE_WITH_YOUR_IP` → any private IPs they mention (Tailscale, home network)
+- `REPLACE_WITH_YOUR_CHANNEL` → their OpenClaw delivery channel
+- `REPLACE_WITH_YOUR_HOSTNAME` → their machine hostname
+
+Only fill in values the user actually provided — skip any they didn't mention. This ensures the audit script catches their personal data if it ever leaks into training content or logs.
+
+### 4. Confirm and hand off
 
 Tell the user:
 - Which program was selected and why
