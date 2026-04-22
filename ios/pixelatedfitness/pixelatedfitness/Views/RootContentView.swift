@@ -3,12 +3,11 @@ import UIKit
 
 struct RootContentView: View {
     @Environment(\.deps) private var deps
+    @Environment(ToastCenter.self) private var toastCenter
 
     @State private var pendingWorkoutFeedback: WorkoutFeedbackState?
-    @State private var feedbackError: String?
     @State private var sharedWorkoutViewModel: WorkoutViewModel?
     @State private var sharedNutritionViewModel: NutritionViewModel?
-    @State private var showClipboardToast = false
     @State private var navigationPath: [AppRoute] = []
     @State private var selectedMode: AppMode = .workout
 
@@ -76,29 +75,6 @@ struct RootContentView: View {
             )
             .presentationDetents([.medium, .large])
         }
-        .alert("Feedback Error", isPresented: Binding(
-            get: { feedbackError != nil },
-            set: { if !$0 { feedbackError = nil } }
-        )) {
-            Button("OK", role: .cancel) { feedbackError = nil }
-        } message: {
-            Text(feedbackError ?? "")
-        }
-        .overlay {
-            if showClipboardToast {
-                VStack {
-                    Spacer()
-                    Text("Workout copied — paste to your AI coach")
-                        .font(.subheadline.weight(.medium))
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
-                        .background(.ultraThinMaterial, in: Capsule())
-                        .padding(.bottom, 100)
-                }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .allowsHitTesting(false)
-            }
-        }
         .task {
             if sharedWorkoutViewModel == nil {
                 sharedWorkoutViewModel = WorkoutViewModel(repo: deps.workouts, onOutput: handleWorkoutOutput)
@@ -134,6 +110,14 @@ private extension RootContentView {
                     completionSummary: summary,
                     feedback: WorkoutFeedback(rating: 3, notes: "")
                 )
+            case .exerciseRemovalPending(let exerciseID, let exerciseName):
+                // Show an Undo toast. If the user taps Undo within the debounce
+                // window, the PATCH is cancelled client-side (no server call).
+                toastCenter.undoable("Removed \(exerciseName)") { [weak sharedWorkoutViewModel] in
+                    sharedWorkoutViewModel?.undoRemoveExercise(exerciseID: exerciseID)
+                }
+            case .exerciseRemovalFailed(let exerciseName):
+                toastCenter.error("Couldn't remove \(exerciseName) — put it back.")
             }
         }
     }
@@ -143,7 +127,7 @@ private extension RootContentView {
         let feedback = pending.feedback
         let completionSummary = pending.completionSummary
 
-        // Copy to clipboard immediately
+        // Copy to clipboard immediately (primary user-visible outcome)
         let summary = formatWorkoutSummary(
             workout: workout,
             completion: completionSummary,
@@ -152,22 +136,19 @@ private extension RootContentView {
         UIPasteboard.general.string = summary
 
         pendingWorkoutFeedback = nil
-        feedbackError = nil
+        toastCenter.info("Workout copied — paste to your AI coach")
 
-        withAnimation(.easeInOut(duration: 0.3)) {
-            showClipboardToast = true
-        }
+        // Persist to bridge server, surface outcome via toast + reload
         Task {
-            try? await Task.sleep(for: .seconds(3))
-            withAnimation(.easeInOut(duration: 0.3)) {
-                showClipboardToast = false
+            do {
+                try await deps.workouts.submitFeedback(for: workout.id, feedback, completion: completionSummary)
+                toastCenter.success("Workout logged")
+            } catch {
+                toastCenter.error("Couldn't log workout to the coach — the clipboard copy is still available.") {
+                    submitFeedback(for: workout)
+                }
             }
-        }
-
-        // Also persist to bridge server (fire and forget)
-        Task {
-            try? await deps.workouts.submitFeedback(for: workout.id, feedback, completion: completionSummary)
-            // Reload workout — it was cleared from bridge after completion
+            // Reload regardless — workout is cleared from bridge after completion
             sharedWorkoutViewModel?.load()
         }
     }

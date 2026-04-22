@@ -35,8 +35,15 @@ enum WorkoutSectionFilter: String, CaseIterable {
     }
 }
 
-enum WorkoutViewOutput: Equatable {
+enum WorkoutViewOutput {
     case finished(Workout, CompletionSummary)
+    /// Emitted when a user-initiated exercise removal is staged and awaiting
+    /// either commit (after the debounce window) or Undo. The view should
+    /// display a toast with an Undo button that calls `undoRemoveExercise`.
+    case exerciseRemovalPending(exerciseID: String, exerciseName: String)
+    /// Emitted when a staged removal's server PATCH fails. The local rollback
+    /// has already happened; the view should surface an error toast.
+    case exerciseRemovalFailed(exerciseName: String)
 }
 
 @MainActor
@@ -56,6 +63,14 @@ final class WorkoutViewModel: ObservableObject {
     private let onOutput: @Sendable (WorkoutViewOutput) -> Void
     private var pollTask: Task<Void, Never>?
     private var syncTask: Task<Void, Never>?
+
+    /// Keyed by exerciseID. While a task is pending here, the PATCH has NOT
+    /// yet been sent to the server — cancelling it (via Undo) reverts the
+    /// local removal without any server round-trip. This is the Gmail-style
+    /// "undo send" pattern: the action is debounced at the client edge, so
+    /// there's nothing for the server to roll back.
+    private var pendingRemovalTasks: [String: Task<Void, Never>] = [:]
+    static let exerciseRemovalDebounce: Duration = .seconds(4)
 
     init(repo: WorkoutRepository, onOutput: @escaping @Sendable (WorkoutViewOutput) -> Void = { _ in }) {
         self.repo = repo
@@ -257,10 +272,43 @@ final class WorkoutViewModel: ObservableObject {
         maybeFinish()
     }
 
-    func removeExercise(exerciseID: String) {
+    /// Stage an exercise for removal. The UI updates immediately, but the
+    /// server PATCH is debounced by `exerciseRemovalDebounce`. During that
+    /// window, the view shows an Undo toast. If Undo is tapped, the task is
+    /// cancelled and the exercise reappears — no server traffic was sent.
+    /// If the debounce elapses, the PATCH is committed; on server error,
+    /// the local state is rolled back and a failure output is emitted.
+    func removeExercise(exerciseID: String, exerciseName: String) {
         removedExercises.insert(exerciseID)
-        Task {
-            try? await repo.patchWorkout(action: "remove_exercise", exerciseId: exerciseID)
+
+        // Cancel any prior pending removal for the same exercise (rapid re-tap).
+        pendingRemovalTasks[exerciseID]?.cancel()
+
+        let task = Task { [weak self] in
+            try? await Task.sleep(for: Self.exerciseRemovalDebounce)
+            guard !Task.isCancelled, let self else { return }
+            do {
+                try await self.repo.patchWorkout(action: "remove_exercise", exerciseId: exerciseID)
+                self.pendingRemovalTasks[exerciseID] = nil
+            } catch {
+                // Rollback: un-remove locally, report failure.
+                self.removedExercises.remove(exerciseID)
+                self.pendingRemovalTasks[exerciseID] = nil
+                self.onOutput(.exerciseRemovalFailed(exerciseName: exerciseName))
+            }
         }
+        pendingRemovalTasks[exerciseID] = task
+
+        onOutput(.exerciseRemovalPending(exerciseID: exerciseID, exerciseName: exerciseName))
+    }
+
+    /// Undo a staged removal before its debounce window expires. If the
+    /// window already closed, this is a no-op (the PATCH has gone out —
+    /// use a separate reinstate flow if we ever need post-commit undo).
+    func undoRemoveExercise(exerciseID: String) {
+        guard let task = pendingRemovalTasks[exerciseID] else { return }
+        task.cancel()
+        pendingRemovalTasks[exerciseID] = nil
+        removedExercises.remove(exerciseID)
     }
 }

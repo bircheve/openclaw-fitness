@@ -57,6 +57,22 @@ extension Color {
         )
     }
 
+    // MARK: - Semantic Feedback Colors
+    // Apple system palette (matches native iOS toast / alert conventions).
+
+    /// Success — matches iOS system green.
+    static let feedbackSuccess = Color(hex: "34C759")
+
+    /// Info — iOS system blue. Intentionally NOT brandPrimary: info needs to read
+    /// as "neutral system acknowledgment," not a brand moment.
+    static let feedbackInfo = Color(hex: "0A84FF")
+
+    /// Warning — iOS system orange.
+    static let feedbackWarning = Color(hex: "FF9500")
+
+    /// Error — iOS system red.
+    static let feedbackError = Color(hex: "FF453A")
+
     // MARK: - Helper initializer for hex colors
 
     init(hex: String) {

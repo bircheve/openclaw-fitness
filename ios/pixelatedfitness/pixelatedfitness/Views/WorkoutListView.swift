@@ -86,7 +86,7 @@ struct WorkoutListView: View {
                                         }
                                         .swipeActions(edge: .trailing) {
                                             Button(role: .destructive) {
-                                                vm.removeExercise(exerciseID: timed.id)
+                                                vm.removeExercise(exerciseID: timed.id, exerciseName: timed.name)
                                             } label: {
                                                 Label("Delete", systemImage: "trash")
                                             }
@@ -120,7 +120,7 @@ struct WorkoutListView: View {
                                         }
                                         .swipeActions(edge: .trailing) {
                                             Button(role: .destructive) {
-                                                vm.removeExercise(exerciseID: strength.id)
+                                                vm.removeExercise(exerciseID: strength.id, exerciseName: strength.name)
                                             } label: {
                                                 Label("Delete", systemImage: "trash")
                                             }
